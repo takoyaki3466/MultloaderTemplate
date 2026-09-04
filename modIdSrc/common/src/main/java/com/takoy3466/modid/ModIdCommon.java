@@ -1,8 +1,6 @@
 package com.takoy3466.modid;
 
-import com.takoy3466.modid.init.CompatBlocks;
-import com.takoy3466.modid.init.CompatItems;
-import com.takoy3466.modid.init.CompatTabs;
+import com.takoy3466.modid.init.*;
 
 public class ModIdCommon {
 
@@ -12,8 +10,10 @@ public class ModIdCommon {
     }
 
     public static void init() {
+        CompatData.init();
         CompatItems.init();
         CompatBlocks.init();
         CompatTabs.init();
+        CompatMenus.init();
     }
 }

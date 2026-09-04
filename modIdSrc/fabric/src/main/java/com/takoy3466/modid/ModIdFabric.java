@@ -8,5 +8,6 @@ public class ModIdFabric implements ModInitializer {
     public void onInitialize() {
 
         ModIdCommon.init();
+        
     }
 }

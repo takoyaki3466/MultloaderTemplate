@@ -1,16 +1,18 @@
 package com.takoy3466.modid.core.registry;
 
 import com.mojang.serialization.Codec;
-import com.takoy3466.modid.core.BlockEntitySup;
+import com.takoy3466.modid.core.CompatBlockEntitySupplier;
+import com.takoy3466.modid.core.CompatMenuSupplier;
+import com.takoy3466.modid.core.ICompatContainerFactory;
 import com.takoy3466.modid.core.platform.Services;
 import com.takoy3466.modid.core.registry.holder.CompatDoubleHolder;
 import com.takoy3466.modid.core.registry.holder.CompatHolder;
-import com.takoy3466.modid.init.CompatBlocks;
-import com.takoy3466.modid.init.CompatItems;
 import com.takoy3466.modid.init.CompatTabs;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
@@ -40,9 +42,22 @@ public class CompatRegistry {
         return doubleHolder;
     }
 
-    public static <T extends BlockEntity> CompatHolder<BlockEntityType<T>> registerBlockEntityType(String id, BlockEntitySup<T> supplier, CompatDoubleHolder.BlockHolder<? extends Block> blockHolder) {
+    public static <T extends BlockEntity> CompatHolder<BlockEntityType<T>> registerBlockEntityType(String id, CompatBlockEntitySupplier<T> supplier, CompatDoubleHolder.BlockHolder<? extends Block> blockHolder) {
         CompatHolder<BlockEntityType<T>> compatHolder = CompatHolder.create(id);
         Services.REGISTRY.registerBlockEntityType(compatHolder, supplier, blockHolder);
+        return compatHolder;
+    }
+
+    public static <T extends AbstractContainerMenu> CompatHolder<MenuType<T>> registerMenuType(String id, CompatMenuSupplier<T> supplier) {
+        CompatHolder<MenuType<T>> compatHolder = CompatHolder.create(id);
+        Services.REGISTRY.registerMenuType(compatHolder, supplier);
+        return compatHolder;
+    }
+
+    @Deprecated
+    public static <T extends AbstractContainerMenu> CompatHolder<MenuType<T>> registerMenuType(String id, ICompatContainerFactory<T> factory) {
+        CompatHolder<MenuType<T>> compatHolder = CompatHolder.create(id);
+        Services.REGISTRY.registerMenuType(compatHolder, factory);
         return compatHolder;
     }
 

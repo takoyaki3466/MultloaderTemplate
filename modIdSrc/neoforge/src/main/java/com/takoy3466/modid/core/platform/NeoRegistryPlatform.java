@@ -2,13 +2,19 @@ package com.takoy3466.modid.core.platform;
 
 import com.mojang.serialization.Codec;
 import com.takoy3466.modid.ModIdCommon;
-import com.takoy3466.modid.core.BlockEntitySup;
+import com.takoy3466.modid.core.CompatBlockEntitySupplier;
+import com.takoy3466.modid.core.CompatMenuSupplier;
+import com.takoy3466.modid.core.ICompatContainerFactory;
 import com.takoy3466.modid.core.registry.holder.CompatDoubleHolder;
 import com.takoy3466.modid.core.registry.holder.CompatHolder;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.world.flag.FeatureFlags;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
@@ -18,6 +24,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.common.extensions.IMenuTypeExtension;
 import net.neoforged.neoforge.registries.DeferredBlock;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredItem;
@@ -29,8 +36,9 @@ public final class NeoRegistryPlatform implements IRegistryPlatform {
     private static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(ModIdCommon.MOD_ID);
     private static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(ModIdCommon.MOD_ID);
     private static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITIES = DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, ModIdCommon.MOD_ID);
+    private static final DeferredRegister<MenuType<?>> MENU_TYPES = DeferredRegister.create(Registries.MENU, ModIdCommon.MOD_ID);
     private static final DeferredRegister.DataComponents DATA_COMPONENTS = DeferredRegister.createDataComponents(Registries.DATA_COMPONENT_TYPE, ModIdCommon.MOD_ID);
-    private    static final DeferredRegister<RecipeSerializer<?>> SERIALIZERS = DeferredRegister.create(Registries.RECIPE_SERIALIZER, ModIdCommon.MOD_ID);
+    private static final DeferredRegister<RecipeSerializer<?>> SERIALIZERS = DeferredRegister.create(Registries.RECIPE_SERIALIZER, ModIdCommon.MOD_ID);
     private static final DeferredRegister<CreativeModeTab> TABS = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, ModIdCommon.MOD_ID);
 
 
@@ -39,6 +47,7 @@ public final class NeoRegistryPlatform implements IRegistryPlatform {
         BLOCKS.register(bus);
         ITEMS.register(bus);
         BLOCK_ENTITIES.register(bus);
+        MENU_TYPES.register(bus);
         SERIALIZERS.register(bus);
         TABS.register(bus);
     }
@@ -58,9 +67,19 @@ public final class NeoRegistryPlatform implements IRegistryPlatform {
     }
 
     @Override
-    public <T extends BlockEntity> void registerBlockEntityType(CompatHolder<BlockEntityType<T>> compatHolder, BlockEntitySup<T> supplier, CompatDoubleHolder.BlockHolder<? extends Block> blockHolder) {
+    public <T extends BlockEntity> void registerBlockEntityType(CompatHolder<BlockEntityType<T>> compatHolder, CompatBlockEntitySupplier<T> supplier, CompatDoubleHolder.BlockHolder<? extends Block> blockHolder) {
         DeferredHolder<BlockEntityType<?>, BlockEntityType<T>> deferredHolder = BLOCK_ENTITIES.register(compatHolder.getId(), () -> BlockEntityType.Builder.of(supplier::create, blockHolder.getBlock()).build(null));
         compatHolder.set(deferredHolder);
+    }
+
+    @Override
+    public <T extends AbstractContainerMenu> void registerMenuType(CompatHolder<MenuType<T>> compatHolder, CompatMenuSupplier<T> supplier) {
+        MENU_TYPES.register(compatHolder.getId(), () -> new MenuType<AbstractContainerMenu>(supplier::create, FeatureFlags.DEFAULT_FLAGS));
+    }
+
+    @Override
+    public <T extends AbstractContainerMenu> void registerMenuType(CompatHolder<MenuType<T>> compatHolder, ICompatContainerFactory<T> factory) {
+        MENU_TYPES.register(compatHolder.getId(), () -> IMenuTypeExtension.create(factory::create));
     }
 
     @Override
