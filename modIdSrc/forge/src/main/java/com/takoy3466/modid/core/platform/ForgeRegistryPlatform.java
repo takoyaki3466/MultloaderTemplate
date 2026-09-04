@@ -57,9 +57,9 @@ public class ForgeRegistryPlatform implements IRegistryPlatform {
     }
 
     @Override
-    public <T extends Block, U extends BlockItem> void registerBlock(CompatDoubleHolder.BlockHolder<T> doubleHolder, Supplier<T> blockSup, Supplier<U> itemSup) {
+    public <T extends Block> void registerBlock(CompatDoubleHolder.BlockHolder<T> doubleHolder, Supplier<T> blockSup, Item.Properties properties) {
         RegistryObject<T> deferredBlock = BLOCKS.register(doubleHolder.getBlockHolder().getId(), blockSup);
-        RegistryObject<BlockItem> deferredItem = ITEMS.register(doubleHolder.getItemHolder().getId(), itemSup);
+        RegistryObject<BlockItem> deferredItem = ITEMS.register(doubleHolder.getItemHolder().getId(), () -> new BlockItem(deferredBlock.get(), properties));
         doubleHolder.getBlockHolder().set(deferredBlock);
         doubleHolder.getItemHolder().set(deferredItem);
     }
